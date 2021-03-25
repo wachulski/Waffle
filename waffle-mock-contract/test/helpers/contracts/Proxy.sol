@@ -23,4 +23,8 @@ contract Proxy {
     function addCapped(uint a) public view returns (uint) {
         return cap(counter.add(a));
     }
+
+    function proxiedSwap(uint amount0Out, uint amount1Out) public view {
+      counter.swap(amount0Out, amount1Out, "some call data");
+    }
 }

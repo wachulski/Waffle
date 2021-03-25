@@ -42,4 +42,8 @@ contract Counter {
     function testArgumentTypes(uint a, bool b, string memory s, bytes memory bs) public pure returns (bytes memory ret) {
         ret = abi.encodePacked(a, b, s, bs);
     }
+
+  function swap(uint amount0Out, uint amount1Out, bytes calldata data) external view {
+
+  }
 }

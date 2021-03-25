@@ -1,6 +1,6 @@
 import {use, expect} from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import {ContractFactory} from 'ethers';
+import {ContractFactory, utils} from 'ethers';
 import {MockProvider} from '@ethereum-waffle/provider';
 import {waffleChai} from '@ethereum-waffle/chai';
 
@@ -46,5 +46,31 @@ describe('Mock Contract - Integration (called by other contract)', () => {
 
     expect(await capContract.addCapped(1)).to.equal(1);
     expect(await capContract.addCapped(2)).to.equal(2);
+  });
+
+  it('mocking swap that has calldata in catch-all manner', async () => {
+    const {capContract, mockCounter} = await deploy();
+    await mockCounter.mock.swap.returns();
+
+    await capContract.proxiedSwap(10, 20);
+
+    expect('swap').to.be.calledOnContractWith(mockCounter, [10, 20, utils.toUtf8Bytes('some call data')]);
+  });
+
+  it('mocking swap that has calldata with args that DO match', async () => {
+    const {capContract, mockCounter} = await deploy();
+    await mockCounter.mock.swap.withArgs(10, 20, utils.toUtf8Bytes('some call data')).returns();
+
+    await capContract.proxiedSwap(10, 20);
+
+    expect('swap').to.be.calledOnContractWith(mockCounter, [10, 20, utils.toUtf8Bytes('some call data')]);
+  });
+
+  it('mocking swap that has calldata with args that DO NOT match', async () => {
+    const {capContract, mockCounter} = await deploy();
+    await mockCounter.mock.swap.withArgs(10, 20, utils.toUtf8Bytes('NOTE!!!! Other call data')).returns();
+
+    // this fails
+    await capContract.proxiedSwap(10, 20);
   });
 });
